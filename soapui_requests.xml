@@ -1,0 +1,78 @@
+<!--
+================================================================================
+  SOAPUI TEST SUITE & SAMPLE REQUESTS
+  Project: Employee Payroll Management System
+  WSDL URL: http://localhost:8080/ws/payslips.wsdl
+  Endpoint: http://localhost:8080/ws
+  Namespace: http://example.com/payroll/soap
+================================================================================
+-->
+
+<!-- ======================================================================= -->
+<!-- TEST CASE 1: SUCCESSFUL PAYSLIP GENERATION                              -->
+<!-- POST URL: http://localhost:8080/ws                                      -->
+<!-- Header: Content-Type: text/xml;charset=UTF-8                            -->
+<!-- ======================================================================= -->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:soap="http://example.com/payroll/soap">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <soap:getPayslipRequest>
+            <soap:employeeId>1</soap:employeeId>
+            <soap:payPeriod>10-2026</soap:payPeriod>
+        </soap:getPayslipRequest>
+    </soapenv:Body>
+</soapenv:Envelope>
+
+<!--
+EXPECTED SUCCESSFUL RESPONSE:
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <ns2:getPayslipResponse xmlns:ns2="http://example.com/payroll/soap">
+            <ns2:employeeId>1</ns2:employeeId>
+            <ns2:employeeName>Robert Martin</ns2:employeeName>
+            <ns2:department>Engineering</ns2:department>
+            <ns2:email>robert.martin@company.com</ns2:email>
+            <ns2:payPeriod>10-2026</ns2:payPeriod>
+            <ns2:basicSalary>60000.0</ns2:basicSalary>
+            <ns2:hra>24000.0</ns2:hra>
+            <ns2:allowances>12000.0</ns2:allowances>
+            <ns2:deductions>6000.0</ns2:deductions>
+            <ns2:grossSalary>96000.0</ns2:grossSalary>
+            <ns2:netPay>90000.0</ns2:netPay>
+            <ns2:status>PROCESSED</ns2:status>
+            <ns2:generatedDate>2026-09-09 11:30:00</ns2:generatedDate>
+        </ns2:getPayslipResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+-->
+
+<!-- ======================================================================= -->
+<!-- TEST CASE 2: SOAP FAULT - NON-EXISTENT EMPLOYEE (ID: 9999)              -->
+<!-- ======================================================================= -->
+<!--
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:soap="http://example.com/payroll/soap">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <soap:getPayslipRequest>
+            <soap:employeeId>9999</soap:employeeId>
+            <soap:payPeriod>10-2026</soap:payPeriod>
+        </soap:getPayslipRequest>
+    </soapenv:Body>
+</soapenv:Envelope>
+-->
+
+<!--
+EXPECTED SOAP FAULT:
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <SOAP-ENV:Fault>
+            <faultcode>SOAP-ENV:Server</faultcode>
+            <faultstring xml:lang="en">SOAP Fault: Employee not found with ID: 9999</faultstring>
+        </SOAP-ENV:Fault>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+-->

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Payroll Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>PayMaster Pro</h1>
+        <span>Enterprise Payroll</span>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li class="nav-item">
+        <button id="nav-dashboard" class="active" onclick="switchView('dashboard')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-employees" onclick="switchView('employees')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Employees (M1)</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-payroll" onclick="switchView('payroll')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+          <span>Payroll Engine (M2/M3)</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-payslip" onclick="switchView('payslip')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Payslip & SOAP (M4)</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-audit" onclick="switchView('audit')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>AOP & Audits (M3)</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-status">
+      <div class="status-indicator">
+        <span class="dot-pulse"></span>
+        <span id="backendStatusText">Backend Online (8080)</span>
+      </div>
+      <div style="font-size: 0.72rem; color: var(--text-sub); margin-top: 0.25rem;">
+        MySQL 8.0 & Spring Boot 3.3.4
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Work Area -->
+  <main class="main-wrapper">
+    <!-- Topbar Header -->
+    <header class="topbar">
+      <div class="page-title">
+        <h2 id="viewHeading">Overview & KPI Dashboard</h2>
+        <p id="viewSubheading">Real-time statistics across active staff, transactions, and payroll status</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary btn-sm" onclick="fetchData()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openAddEmployeeModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Employee
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- ================= 1. DASHBOARD VIEW ================= -->
+      <section id="view-dashboard" class="view-section active">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-info">
+              <h3>Total Employees</h3>
+              <div class="metric-number" id="dashTotalEmp">0</div>
+              <div class="metric-sub">Registered Staff Members</div>
+            </div>
+            <div class="metric-icon-wrap icon-blue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <h3>Active Departments</h3>
+              <div class="metric-number" id="dashDepts">0</div>
+              <div class="metric-sub">Operational Business Units</div>
+            </div>
+            <div class="metric-icon-wrap icon-purple">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <h3>Monthly Net Outflow</h3>
+              <div class="metric-number" id="dashDisbursement">₹0</div>
+              <div class="metric-sub">Current Processed Payroll</div>
+            </div>
+            <div class="metric-icon-wrap icon-green">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <h3>API Interoperability</h3>
+              <div class="metric-number">REST + SOAP</div>
+              <div class="metric-sub">JSON & XML Contracts</div>
+            </div>
+            <div class="metric-icon-wrap icon-amber">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+          <!-- Quick Staff Table Preview -->
+          <div class="card-glass">
+            <div class="card-header-flex">
+              <h3>Recent Employee Profiles</h3>
+              <button class="btn btn-secondary btn-sm" onclick="switchView('employees')">View All</button>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dashEmpTableBody">
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-sub);">Loading staff records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Architecture & Module Summary -->
+          <div class="card-glass">
+            <div class="card-header-flex">
+              <h3>Core Architecture</h3>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.86rem;">
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div style="font-weight: 700; color: #818cf8; margin-bottom: 0.2rem;">Module 1: JPA Persistence</div>
+                <div style="color: var(--text-muted);">MySQL 8.0 InnoDB + Relational Integrity & Hibernate ORM</div>
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div style="font-weight: 700; color: #34d399; margin-bottom: 0.2rem;">Module 2 & 3: ACID Transactions</div>
+                <div style="color: var(--text-muted);">@Transactional atomic commits + AspectJ method audit & timings</div>
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div style="font-weight: 700; color: #38bdf8; margin-bottom: 0.2rem;">Module 4: Spring-WS SOAP</div>
+                <div style="color: var(--text-muted);">Contract-first XML payslips published dynamically at /ws/payslips.wsdl</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. EMPLOYEES VIEW (MODULE 1) ================= -->
+      <section id="view-employees" class="view-section">
+        <div class="card-glass">
+          <div class="filter-bar">
+            <div class="search-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="employeeSearchInput" class="form-control" placeholder="Search by name, email, department..." oninput="filterEmployees()">
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <select id="departmentFilter" class="form-control" style="width: 180px;" onchange="filterEmployees()">
+                <option value="">All Departments</option>
+              </select>
+              <button class="btn btn-primary" onclick="openAddEmployeeModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Register Employee
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Employee</th>
+                  <th>Department</th>
+                  <th>Designation</th>
+                  <th>Contact</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="employeesTableBody">
+                <!-- Dynamically loaded -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. PAYROLL ENGINE VIEW (MODULE 2 & 3) ================= -->
+      <section id="view-payroll" class="view-section">
+        <div class="calc-container">
+          <!-- Input Form Card -->
+          <div class="card-glass">
+            <div class="card-header-flex">
+              <h3>Compute & Commit Monthly Salary</h3>
+              <span class="badge badge-processed">ACID Enforced</span>
+            </div>
+
+            <form id="payrollCalcForm" onsubmit="handlePayrollSubmit(event)">
+              <div class="form-group">
+                <label>Select Target Employee</label>
+                <select id="calcEmployeeSelect" class="form-control" required onchange="handleCalcEmployeeChange()">
+                  <option value="">-- Choose Staff Member --</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Pay Period (MM-YYYY)</label>
+                  <input type="text" id="calcPayPeriod" class="form-control" value="10-2026" pattern="^(0[1-9]|1[0-2])-\d{4}$" required placeholder="e.g. 10-2026">
+                </div>
+                <div class="form-group">
+                  <label>Basic Salary (₹)</label>
+                  <input type="number" id="calcBasic" class="form-control" step="0.01" min="0" value="60000" required oninput="recalcLiveMath()">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>HRA - House Rent (₹)</label>
+                  <input type="number" id="calcHra" class="form-control" step="0.01" min="0" value="24000" required oninput="recalcLiveMath()">
+                </div>
+                <div class="form-group">
+                  <label>Allowances (₹)</label>
+                  <input type="number" id="calcAllowances" class="form-control" step="0.01" min="0" value="12000" required oninput="recalcLiveMath()">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Deductions (Tax, PF, Leaves) (₹)</label>
+                <input type="number" id="calcDeductions" class="form-control" step="0.01" min="0" value="6000" required oninput="recalcLiveMath()">
+              </div>
+
+              <div class="warning-callout" id="calcDeductionWarning">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>Warning: Deductions exceed Gross Salary! Submitting this will trigger <strong>InvalidPayrollDataException</strong> and invoke transactional rollback.</span>
+              </div>
+
+              <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                <button type="submit" id="btnSubmitPayroll" class="btn btn-primary" style="flex: 1;">
+                  Calculate & Persist Record
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="triggerRollbackDemo()">
+                  Simulate Rollback Test
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Live Breakdown & Mathematical Proof -->
+          <div class="calc-preview-box">
+            <div>
+              <h3 style="font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 0.35rem;">Real-time Mathematical Breakdown</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                Formula: Gross = Basic + HRA + Allowances | Net = Gross - Deductions
+              </p>
+
+              <div class="calc-math-row">
+                <span style="color: var(--text-muted);">Basic Component:</span>
+                <span id="previewBasic">₹60,000.00</span>
+              </div>
+              <div class="calc-math-row">
+                <span style="color: var(--text-muted);">+ HRA Component:</span>
+                <span id="previewHra">₹24,000.00</span>
+              </div>
+              <div class="calc-math-row">
+                <span style="color: var(--text-muted);">+ Special Allowances:</span>
+                <span id="previewAllowances">₹12,000.00</span>
+              </div>
+              <div class="calc-math-row highlight" style="color: #60a5fa; border-top: 1px solid var(--border-color);">
+                <span>= Gross Salary:</span>
+                <span id="previewGross">₹96,000.00</span>
+              </div>
+              <div class="calc-math-row" style="color: #f87171;">
+                <span>- Statutory Deductions:</span>
+                <span id="previewDeductions">₹6,000.00</span>
+              </div>
+            </div>
+
+            <div class="net-pay-big">
+              <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Calculated Net Pay</div>
+              <div class="amount" id="previewNetPay">₹90,000.00</div>
+              <div style="font-size: 0.75rem; color: var(--text-sub); margin-top: 0.2rem;">Subject to atomic ACID commit to MySQL</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. PAYSLIP & SOAP VIEW (MODULE 4) ================= -->
+      <section id="view-payslip" class="view-section">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; justify-content: space-between;">
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <select id="payslipEmpSelect" class="form-control" style="width: 250px;" onchange="loadEmployeePayslip()">
+              <option value="">-- Select Staff Member --</option>
+            </select>
+            <input type="text" id="payslipPeriodInput" class="form-control" style="width: 140px;" value="10-2026" placeholder="MM-YYYY">
+            <button class="btn btn-secondary btn-sm" onclick="loadEmployeePayslip()">Fetch Payslip</button>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <button class="btn btn-secondary btn-sm" onclick="toggleSoapTester()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              Toggle SOAP/XML Tester
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="window.print()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Print Payslip
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive SOAP XML Console (collapsible) -->
+        <div id="soapTesterCard" class="card-glass" style="display: none;">
+          <div class="card-header-flex">
+            <h3>Contract-First SOAP 1.1 Web Service Console</h3>
+            <a href="http://localhost:8080/ws/payslips.wsdl" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">
+              View WSDL (payslips.wsdl) ↗
+            </a>
+          </div>
+          <div class="xml-console">
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem;">SOAP REQUEST ENVELOPE (POST /ws)</div>
+              <div class="code-box" id="soapReqBox">&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://example.com/payroll/soap"&gt;
+    &lt;soapenv:Header/&gt;
+    &lt;soapenv:Body&gt;
+        &lt;soap:getPayslipRequest&gt;
+            &lt;soap:employeeId&gt;1&lt;/soap:employeeId&gt;
+            &lt;soap:payPeriod&gt;10-2026&lt;/soap:payPeriod&gt;
+        &lt;/soap:getPayslipRequest&gt;
+    &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</div>
+              <button class="btn btn-primary btn-sm" style="margin-top: 0.75rem;" onclick="sendSoapRequestDirectly()">
+                Execute SOAP Request
+              </button>
+            </div>
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem;">SOAP RESPONSE XML PAYLOAD</div>
+              <div class="code-box" id="soapResBox">// Click Execute to send SOAP request to http://localhost:8080/ws...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Corporate Formatted Printable Payslip -->
+        <div class="payslip-sheet" id="printablePayslip">
+          <div class="payslip-header">
+            <div class="payslip-title">
+              <h2>CORP TECH GLOBAL SOLUTIONS</h2>
+              <p>100 Enterprise Way, Silicon Valley, CA 94025 | Payroll Department</p>
+            </div>
+            <div style="text-align: right;">
+              <h3 style="font-size: 1.1rem; color: #4338ca; font-weight: 700;">SALARY PAYSLIP</h3>
+              <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;" id="psPayPeriod">Pay Period: 10-2026</p>
+            </div>
+          </div>
+
+          <div class="payslip-info-grid">
+            <div>
+              <p><strong>Employee ID:</strong> <span id="psEmpId">#1</span></p>
+              <p><strong>Employee Name:</strong> <span id="psEmpName">John Doe</span></p>
+              <p><strong>Email:</strong> <span id="psEmpEmail">john.doe@company.com</span></p>
+            </div>
+            <div>
+              <p><strong>Department:</strong> <span id="psDept">Engineering</span></p>
+              <p><strong>Designation:</strong> <span id="psDesignation">Senior Software Engineer</span></p>
+              <p><strong>Status:</strong> <span id="psStatus" class="badge badge-active">ACTIVE</span></p>
+            </div>
+          </div>
+
+          <table class="payslip-table">
+            <thead>
+              <tr>
+                <th>Earnings</th>
+                <th style="text-align: right;">Amount (₹)</th>
+                <th>Deductions</th>
+                <th style="text-align: right;">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Basic Salary</td>
+                <td style="text-align: right;" id="psBasic">60,000.00</td>
+                <td>Provident Fund & Taxes</td>
+                <td style="text-align: right;" id="psDeductions">6,000.00</td>
+              </tr>
+              <tr>
+                <td>House Rent Allowance (HRA)</td>
+                <td style="text-align: right;" id="psHra">24,000.00</td>
+                <td>Unpaid Leaves / Others</td>
+                <td style="text-align: right;">0.00</td>
+              </tr>
+              <tr>
+                <td>Special Allowances</td>
+                <td style="text-align: right;" id="psAllowances">12,000.00</td>
+                <td>-</td>
+                <td style="text-align: right;">-</td>
+              </tr>
+              <tr class="total-row">
+                <td>Gross Earnings</td>
+                <td style="text-align: right;" id="psGross">₹96,000.00</td>
+                <td>Total Deductions</td>
+                <td style="text-align: right;" id="psTotalDeductions">₹6,000.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="background: #f1f5f9; padding: 1rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">NET PAYABLE AMOUNT:</div>
+            <div style="font-size: 1.45rem; font-weight: 800; color: #4338ca;" id="psNetPay">₹90,000.00</div>
+          </div>
+
+          <div class="payslip-footer">
+            <div style="font-size: 0.78rem; color: #64748b;">
+              <p>Generated Date: <span id="psGenDate">2026-10-08 15:45:18</span></p>
+              <p>Multi-protocol verified via Spring-WS (Contract: payslip.xsd)</p>
+            </div>
+            <div class="stamp-box">
+              AUTHORIZED PAYROLL SIGNATURE<br>
+              <span style="font-size: 0.65rem; color: #059669;">Verified by AspectJ Audit</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. AOP & AUDITS VIEW (MODULE 3) ================= -->
+      <section id="view-audit" class="view-section">
+        <div class="card-glass">
+          <div class="card-header-flex">
+            <h3>Spring AOP Interceptor & Transaction Audit Trail</h3>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-sm" onclick="clearAuditLog()">Clear Stream</button>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            Captures method entries (<code style="color: #60a5fa;">@Before</code>), method returns (<code style="color: #34d399;">@AfterReturning</code>), around timing metrics (<code style="color: #fbbf24;">@Around</code>), exceptions (<code style="color: #f87171;">@AfterThrowing</code>), and atomic transactional commit/rollback audits.
+          </p>
+
+          <div id="auditLiveStream">
+            <!-- Dynamic stream items -->
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- Add Employee Modal -->
+<div class="modal-overlay" id="addEmployeeModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="modalEmpTitle">Register New Employee</h3>
+      <button class="btn-close" onclick="closeModal('addEmployeeModal')">&times;</button>
+    </div>
+    <form id="addEmployeeForm" onsubmit="handleEmployeeFormSubmit(event)">
+      <input type="hidden" id="editEmployeeId">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Full Employee Name *</label>
+          <input type="text" id="formEmpName" class="form-control" required placeholder="e.g. John Doe">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Department *</label>
+            <input type="text" id="formEmpDept" class="form-control" required placeholder="Engineering">
+          </div>
+          <div class="form-group">
+            <label>Designation</label>
+            <input type="text" id="formEmpDesignation" class="form-control" placeholder="Lead Engineer">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Corporate Email *</label>
+          <input type="email" id="formEmpEmail" class="form-control" required placeholder="user@company.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" id="formEmpPhone" class="form-control" placeholder="+1-555-0101">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="formEmpStatus" class="form-control">
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="INACTIVE">INACTIVE</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addEmployeeModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveEmployee">Save Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Salary History Modal -->
+<div class="modal-overlay" id="salaryHistoryModal">
+  <div class="modal-card" style="max-width: 650px;">
+    <div class="modal-header">
+      <h3 id="historyModalTitle">Salary Computation History</h3>
+      <button class="btn-close" onclick="closeModal('salaryHistoryModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Gross</th>
+              <th>Deductions</th>
+              <th>Net Pay</th>
+              <th>Processed Date</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- Loaded on demand -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('salaryHistoryModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

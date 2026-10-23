@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://example.com/payroll/soap"
+           targetNamespace="http://example.com/payroll/soap"
+           elementFormDefault="qualified">
+
+    <!-- Request Element -->
+    <xs:element name="getPayslipRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="employeeId" type="xs:long"/>
+                <xs:element name="payPeriod" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Response Element -->
+    <xs:element name="getPayslipResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="employeeId" type="xs:long"/>
+                <xs:element name="employeeName" type="xs:string"/>
+                <xs:element name="department" type="xs:string"/>
+                <xs:element name="email" type="xs:string"/>
+                <xs:element name="payPeriod" type="xs:string"/>
+                <xs:element name="basicSalary" type="xs:double"/>
+                <xs:element name="hra" type="xs:double"/>
+                <xs:element name="allowances" type="xs:double"/>
+                <xs:element name="deductions" type="xs:double"/>
+                <xs:element name="grossSalary" type="xs:double"/>
+                <xs:element name="netPay" type="xs:double"/>
+                <xs:element name="status" type="xs:string"/>
+                <xs:element name="generatedDate" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

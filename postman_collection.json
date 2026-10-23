@@ -1,0 +1,229 @@
+{
+  "info": {
+    "_postman_id": "c71a3641-0209-410a-8bf8-924b1d1be8e9",
+    "name": "Employee Payroll Management System API",
+    "description": "Comprehensive Postman collection for testing Employee and Payroll REST APIs, Validation Rules, Transaction Rollback, and Centralized Error Handling.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Module 1 - Employee Management",
+      "item": [
+        {
+          "name": "1. Register New Employee (Success - 201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeName\": \"Robert Martin\",\n  \"department\": \"Engineering\",\n  \"email\": \"robert.martin@company.com\",\n  \"designation\": \"Principal Architect\",\n  \"phone\": \"+1-555-0199\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/employees",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "employees"]
+            }
+          }
+        },
+        {
+          "name": "2. Get Employee by ID (Success - 200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/employees/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "employees", "1"]
+            }
+          }
+        },
+        {
+          "name": "3. Get All Employees (Success - 200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/employees",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "employees"]
+            }
+          }
+        },
+        {
+          "name": "4. Update Employee (Success - 200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeName\": \"Robert C. Martin\",\n  \"department\": \"Software Architecture\",\n  \"email\": \"robert.martin@company.com\",\n  \"designation\": \"Chief Architect\",\n  \"phone\": \"+1-555-0199\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/employees/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "employees", "1"]
+            }
+          }
+        },
+        {
+          "name": "5. Delete Employee (Success - 200)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/employees/4",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "employees", "4"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 2 & 3 - Payroll Processing & Transactions",
+      "item": [
+        {
+          "name": "1. Calculate Monthly Salary (Commit - 200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payPeriod\": \"10-2026\",\n  \"basicSalary\": 60000.0,\n  \"hra\": 24000.0,\n  \"allowances\": 12000.0,\n  \"deductions\": 6000.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/payroll/calculate/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "payroll", "calculate", "1"]
+            }
+          }
+        },
+        {
+          "name": "2. Get Salary History for Employee (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/payroll/employee/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "payroll", "employee", "1"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Salary for Period (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/payroll/employee/1/period/10-2026",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "payroll", "employee", "1", "period", "10-2026"]
+            }
+          }
+        },
+        {
+          "name": "4. Transaction Rollback Test - Deductions Exceed Gross (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payPeriod\": \"11-2026\",\n  \"basicSalary\": 20000.0,\n  \"hra\": 5000.0,\n  \"allowances\": 3000.0,\n  \"deductions\": 50000.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/payroll/calculate/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "payroll", "calculate", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 4 - Validation & Centralized Error Handling",
+      "item": [
+        {
+          "name": "1. Validation Error - Blank Name & Invalid Email (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeName\": \"\",\n  \"department\": \"\",\n  \"email\": \"invalid-email-address\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/employees",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "employees"]
+            }
+          }
+        },
+        {
+          "name": "2. Validation Error - Invalid Pay Period Format (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payPeriod\": \"2026/09\",\n  \"basicSalary\": 50000.0,\n  \"hra\": 10000.0,\n  \"allowances\": 5000.0,\n  \"deductions\": 2000.0\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/payroll/calculate/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "payroll", "calculate", "1"]
+            }
+          }
+        },
+        {
+          "name": "3. Not Found Error - Non-existent Employee (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/employees/9999",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "employees", "9999"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
