@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface SalaryRepository extends JpaRepository<Salary, Long> {
     Optional<Salary> findByEmployeeEmployeeIdAndPayPeriod(Long employeeId, String payPeriod);
     List<Salary> findByEmployeeEmployeeId(Long employeeId);
+    List<Salary> findByPayPeriod(String payPeriod);
 }

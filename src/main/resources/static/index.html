@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3.2">
 </head>
 <body>
 
@@ -120,9 +120,12 @@
 
           <div class="metric-card">
             <div class="metric-info">
-              <h3>Monthly Net Outflow</h3>
-              <div class="metric-number" id="dashDisbursement">₹0</div>
-              <div class="metric-sub">Current Processed Payroll</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                <h3>Monthly Net Outflow</h3>
+                <input type="text" id="dashPeriodFilter" class="form-control" style="width: 100px; padding: 0.15rem 0.4rem; font-size: 0.72rem; height: 26px; border-radius: 4px;" placeholder="MM-YYYY" title="Filter Outflow by Period (MM-YYYY)" onchange="handleDashPeriodChange()">
+              </div>
+              <div class="metric-number" id="dashDisbursement">₹0.00</div>
+              <div class="metric-sub" id="dashDisbursementSub">Present Month: Loading...</div>
             </div>
             <div class="metric-icon-wrap icon-green">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
@@ -244,33 +247,38 @@
                 <select id="calcEmployeeSelect" class="form-control" required onchange="handleCalcEmployeeChange()">
                   <option value="">-- Choose Staff Member --</option>
                 </select>
+                <div id="calcEmpRoleBadge" style="display: none; margin-top: 0.6rem; font-size: 0.8rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 6px; padding: 0.45rem 0.85rem; color: #38bdf8; justify-content: space-between; align-items: center;">
+                  <span>Department: <strong id="calcDeptName" style="color: #fff;">-</strong></span>
+                  <span>Role: <strong id="calcRoleName" style="color: #34d399;">-</strong></span>
+                  <span style="font-size: 0.72rem; color: var(--text-sub);">(Auto-filled by Role Scale)</span>
+                </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
                   <label>Pay Period (MM-YYYY)</label>
-                  <input type="text" id="calcPayPeriod" class="form-control" value="10-2026" pattern="^(0[1-9]|1[0-2])-\d{4}$" required placeholder="e.g. 10-2026">
+                  <input type="text" id="calcPayPeriod" class="form-control" pattern="^(0[1-9]|1[0-2])-\d{4}$" required placeholder="MM-YYYY">
                 </div>
                 <div class="form-group">
                   <label>Basic Salary (₹)</label>
-                  <input type="number" id="calcBasic" class="form-control" step="0.01" min="0" value="60000" required oninput="recalcLiveMath()">
+                  <input type="number" id="calcBasic" class="form-control" step="0.01" min="0" placeholder="e.g. 50000" required oninput="recalcLiveMath()">
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
                   <label>HRA - House Rent (₹)</label>
-                  <input type="number" id="calcHra" class="form-control" step="0.01" min="0" value="24000" required oninput="recalcLiveMath()">
+                  <input type="number" id="calcHra" class="form-control" step="0.01" min="0" placeholder="e.g. 20000" required oninput="recalcLiveMath()">
                 </div>
                 <div class="form-group">
                   <label>Allowances (₹)</label>
-                  <input type="number" id="calcAllowances" class="form-control" step="0.01" min="0" value="12000" required oninput="recalcLiveMath()">
+                  <input type="number" id="calcAllowances" class="form-control" step="0.01" min="0" placeholder="e.g. 10000" required oninput="recalcLiveMath()">
                 </div>
               </div>
 
               <div class="form-group">
                 <label>Deductions (Tax, PF, Leaves) (₹)</label>
-                <input type="number" id="calcDeductions" class="form-control" step="0.01" min="0" value="6000" required oninput="recalcLiveMath()">
+                <input type="number" id="calcDeductions" class="form-control" step="0.01" min="0" placeholder="e.g. 5000" required oninput="recalcLiveMath()">
               </div>
 
               <div class="warning-callout" id="calcDeductionWarning">
@@ -335,7 +343,7 @@
             <select id="payslipEmpSelect" class="form-control" style="width: 250px;" onchange="loadEmployeePayslip()">
               <option value="">-- Select Staff Member --</option>
             </select>
-            <input type="text" id="payslipPeriodInput" class="form-control" style="width: 140px;" value="10-2026" placeholder="MM-YYYY">
+            <input type="text" id="payslipPeriodInput" class="form-control" style="width: 140px;" placeholder="MM-YYYY">
             <button class="btn btn-secondary btn-sm" onclick="loadEmployeePayslip()">Fetch Payslip</button>
           </div>
           <div style="display: flex; gap: 0.75rem;">
@@ -343,7 +351,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
               Toggle SOAP/XML Tester
             </button>
-            <button class="btn btn-primary btn-sm" onclick="window.print()">
+            <button id="btnPrintPayslip" class="btn btn-primary btn-sm" onclick="printPayslip()" disabled style="opacity: 0.6; cursor: not-allowed;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
               Print Payslip
             </button>
@@ -381,82 +389,128 @@
           </div>
         </div>
 
+        <!-- Unprocessed Warning Alert (shown when employee has no payroll for selected period) -->
+        <div id="payslipUnprocessedAlert" class="card-glass" style="display: none; padding: 2.5rem; text-align: center; border: 1px dashed rgba(239, 68, 68, 0.4);">
+          <div style="width: 56px; height: 56px; background: rgba(239, 68, 68, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; color: #f87171;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <h3 style="font-size: 1.25rem; font-family: var(--font-heading); margin-bottom: 0.5rem; color: #f87171;" id="unprocessedTitle">Payroll Not Processed</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 520px; margin: 0 auto 1.5rem;" id="unprocessedMsg">
+            This employee does not have a processed payroll record for this period. A payslip cannot be generated until payroll processing is completed.
+          </p>
+          <button class="btn btn-primary" onclick="goToProcessPayrollForCurrent()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            Compute &amp; Process Payroll Now
+          </button>
+        </div>
+
         <!-- Corporate Formatted Printable Payslip -->
-        <div class="payslip-sheet" id="printablePayslip">
+        <div class="payslip-sheet" id="printablePayslip" style="display: none;">
           <div class="payslip-header">
-            <div class="payslip-title">
-              <h2>CORP TECH GLOBAL SOLUTIONS</h2>
-              <p>100 Enterprise Way, Silicon Valley, CA 94025 | Payroll Department</p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div class="payslip-logo-badge">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+              </div>
+              <div class="payslip-title">
+                <h2>CORP TECH GLOBAL SOLUTIONS PVT. LTD.</h2>
+                <p>Plot 42, Tech Park, Financial District, Hyderabad - 500032 | Tel: +91 40 6829 1000</p>
+                <p style="font-size: 0.72rem; color: #64748b;">CIN: U72200TG2020PTC145678 | GSTIN: 36AAACC1206M1ZG</p>
+              </div>
             </div>
             <div style="text-align: right;">
-              <h3 style="font-size: 1.1rem; color: #4338ca; font-weight: 700;">SALARY PAYSLIP</h3>
-              <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;" id="psPayPeriod">Pay Period: 10-2026</p>
+              <div class="payslip-doc-badge">OFFICIAL SALARY SLIP</div>
+              <p style="font-size: 0.88rem; font-weight: 700; color: #0f172a; margin-top: 5px;" id="psPayPeriod">Pay Period: 10-2026</p>
+              <p style="font-size: 0.74rem; color: #64748b; font-weight: 600;" id="psSlipNo">Slip No: CTG/PAY/202610/01</p>
             </div>
           </div>
 
-          <div class="payslip-info-grid">
-            <div>
-              <p><strong>Employee ID:</strong> <span id="psEmpId">#1</span></p>
-              <p><strong>Employee Name:</strong> <span id="psEmpName">John Doe</span></p>
-              <p><strong>Email:</strong> <span id="psEmpEmail">john.doe@company.com</span></p>
+          <!-- Employee & Employment Metadata -->
+          <div class="payslip-meta-container">
+            <div class="payslip-meta-grid">
+              <div class="meta-col">
+                <div class="meta-item"><span class="meta-label">Employee ID:</span><span class="meta-val" id="psEmpId">#1</span></div>
+                <div class="meta-item"><span class="meta-label">Employee Name:</span><span class="meta-val" id="psEmpName">John Doe</span></div>
+                <div class="meta-item"><span class="meta-label">Department:</span><span class="meta-val" id="psDept">Engineering</span></div>
+                <div class="meta-item"><span class="meta-label">Designation:</span><span class="meta-val" id="psDesignation">Senior Software Engineer</span></div>
+              </div>
+              <div class="meta-col">
+                <div class="meta-item"><span class="meta-label">Email ID:</span><span class="meta-val" id="psEmpEmail">john.doe@company.com</span></div>
+                <div class="meta-item"><span class="meta-label">Payment Mode:</span><span class="meta-val">Direct Bank Transfer</span></div>
+                <div class="meta-item"><span class="meta-label">Bank A/C Ref:</span><span class="meta-val" id="psBankAcc">HDFC-XXXX-4589</span></div>
+                <div class="meta-item"><span class="meta-label">Verification:</span><span class="badge badge-active" id="psStatus">ACTIVE &amp; PAID</span></div>
+              </div>
             </div>
-            <div>
-              <p><strong>Department:</strong> <span id="psDept">Engineering</span></p>
-              <p><strong>Designation:</strong> <span id="psDesignation">Senior Software Engineer</span></p>
-              <p><strong>Status:</strong> <span id="psStatus" class="badge badge-active">ACTIVE</span></p>
+
+            <!-- Attendance Mini-bar -->
+            <div class="payslip-attendance-bar">
+              <div><strong>Calendar Days:</strong> <span id="psCalDays">31</span></div>
+              <div><strong>Paid Days:</strong> <span id="psPaidDays">31</span></div>
+              <div><strong>Leaves / Loss of Pay:</strong> <span>0</span></div>
+              <div><strong>Payment Status:</strong> <span style="color: #15803d; font-weight: 700;">CONFIRMED</span></div>
             </div>
           </div>
 
+          <!-- Structured Earnings and Deductions Table -->
           <table class="payslip-table">
             <thead>
               <tr>
-                <th>Earnings</th>
-                <th style="text-align: right;">Amount (₹)</th>
-                <th>Deductions</th>
-                <th style="text-align: right;">Amount (₹)</th>
+                <th style="width: 32%;">Earnings Component</th>
+                <th style="width: 18%; text-align: right;">Amount (₹)</th>
+                <th style="width: 32%;">Deductions Component</th>
+                <th style="width: 18%; text-align: right;">Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Basic Salary</td>
                 <td style="text-align: right;" id="psBasic">60,000.00</td>
-                <td>Provident Fund & Taxes</td>
-                <td style="text-align: right;" id="psDeductions">6,000.00</td>
+                <td>Provident Fund (PF - Employee)</td>
+                <td style="text-align: right;" id="psPf">3,600.00</td>
               </tr>
               <tr>
                 <td>House Rent Allowance (HRA)</td>
                 <td style="text-align: right;" id="psHra">24,000.00</td>
-                <td>Unpaid Leaves / Others</td>
-                <td style="text-align: right;">0.00</td>
+                <td>Professional Tax / TDS Deduction</td>
+                <td style="text-align: right;" id="psTax">2,400.00</td>
               </tr>
               <tr>
-                <td>Special Allowances</td>
+                <td>Special &amp; Performance Allowances</td>
                 <td style="text-align: right;" id="psAllowances">12,000.00</td>
-                <td>-</td>
-                <td style="text-align: right;">-</td>
+                <td>Other Statutory Recoveries</td>
+                <td style="text-align: right;">0.00</td>
               </tr>
               <tr class="total-row">
-                <td>Gross Earnings</td>
+                <td>Total Gross Earnings</td>
                 <td style="text-align: right;" id="psGross">₹96,000.00</td>
-                <td>Total Deductions</td>
+                <td>Total Statutory Deductions</td>
                 <td style="text-align: right;" id="psTotalDeductions">₹6,000.00</td>
               </tr>
             </tbody>
           </table>
 
-          <div style="background: #f1f5f9; padding: 1rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">NET PAYABLE AMOUNT:</div>
-            <div style="font-size: 1.45rem; font-weight: 800; color: #4338ca;" id="psNetPay">₹90,000.00</div>
+          <!-- Net Pay & Words Callout Box -->
+          <div class="payslip-net-box">
+            <div>
+              <div class="net-title">NET PAYABLE AMOUNT:</div>
+              <div class="net-words" id="psNetWords">Rupees Ninety Thousand Only</div>
+            </div>
+            <div class="net-value" id="psNetPay">₹90,000.00</div>
           </div>
 
+          <!-- Signatures & Official Audit Footer -->
           <div class="payslip-footer">
-            <div style="font-size: 0.78rem; color: #64748b;">
-              <p>Generated Date: <span id="psGenDate">2026-10-08 15:45:18</span></p>
-              <p>Multi-protocol verified via Spring-WS (Contract: payslip.xsd)</p>
+            <div class="payslip-legal">
+              <p><strong>System Audit:</strong> Verified via Spring-WS Contract (<code>payslip.xsd</code>) &amp; ACID Commit</p>
+              <p>Generated: <span id="psGenDate">2026-10-26 11:30:00</span> | Txn ID: <span id="psTxnId">TXN-8472910</span></p>
+              <p style="font-size: 0.70rem; color: #64748b; margin-top: 3px;">This is a system-generated salary slip and does not require a physical signature.</p>
             </div>
             <div class="stamp-box">
-              AUTHORIZED PAYROLL SIGNATURE<br>
-              <span style="font-size: 0.65rem; color: #059669;">Verified by AspectJ Audit</span>
+              <div class="stamp-title">CORP TECH GLOBAL</div>
+              <div class="stamp-sub">PAYROLL DEPARTMENT</div>
+              <div class="stamp-status">✓ DIGITALLY AUTHORIZED</div>
             </div>
           </div>
         </div>
@@ -504,13 +558,184 @@
         <div class="form-row">
           <div class="form-group">
             <label>Department *</label>
-            <input type="text" id="formEmpDept" class="form-control" required placeholder="Engineering">
+            <select id="formEmpDept" class="form-control" required onchange="handleDepartmentChange()">
+              <option value="">-- Select Department --</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Finance">Finance</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Operations">Operations</option>
+              <option value="Sales">Sales</option>
+              <option value="Legal &amp; Compliance">Legal &amp; Compliance</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>Designation</label>
-            <input type="text" id="formEmpDesignation" class="form-control" placeholder="Lead Engineer">
+            <label>Designation *</label>
+            <select id="formEmpDesignation" class="form-control" required>
+              <option value="">-- Select Designation --</option>
+              <optgroup label="Engineering">
+                <option value="Software Engineer">Software Engineer</option>
+                <option value="Senior Software Engineer">Senior Software Engineer</option>
+                <option value="Lead Engineer">Lead Engineer</option>
+                <option value="Principal Architect">Principal Architect</option>
+                <option value="Engineering Manager">Engineering Manager</option>
+                <option value="QA Automation Engineer">QA Automation Engineer</option>
+                <option value="DevOps Engineer">DevOps Engineer</option>
+              </optgroup>
+              <optgroup label="Human Resources">
+                <option value="HR Generalist">HR Generalist</option>
+                <option value="HR Manager">HR Manager</option>
+                <option value="Talent Acquisition Specialist">Talent Acquisition Specialist</option>
+                <option value="Recruiter">Recruiter</option>
+                <option value="HR Director">HR Director</option>
+              </optgroup>
+              <optgroup label="Finance">
+                <option value="Financial Analyst">Financial Analyst</option>
+                <option value="Accountant">Accountant</option>
+                <option value="Payroll Specialist">Payroll Specialist</option>
+                <option value="Finance Manager">Finance Manager</option>
+                <option value="Chief Financial Officer (CFO)">Chief Financial Officer (CFO)</option>
+              </optgroup>
+              <optgroup label="Marketing">
+                <option value="Marketing Lead">Marketing Lead</option>
+                <option value="Digital Marketing Specialist">Digital Marketing Specialist</option>
+                <option value="Content Strategist">Content Strategist</option>
+                <option value="SEO Specialist">SEO Specialist</option>
+                <option value="Marketing Director">Marketing Director</option>
+              </optgroup>
+              <optgroup label="Operations">
+                <option value="Operations Manager">Operations Manager</option>
+                <option value="Business Analyst">Business Analyst</option>
+                <option value="Project Manager">Project Manager</option>
+                <option value="Scrum Master">Scrum Master</option>
+                <option value="Logistics Coordinator">Logistics Coordinator</option>
+              </optgroup>
+              <optgroup label="Sales">
+                <option value="Sales Executive">Sales Executive</option>
+                <option value="Account Executive">Account Executive</option>
+                <option value="Sales Manager">Sales Manager</option>
+                <option value="Business Development Representative">Business Development Representative</option>
+                <option value="Sales Director">Sales Director</option>
+              </optgroup>
+              <optgroup label="Legal &amp; Compliance">
+                <option value="Legal Counsel">Legal Counsel</option>
+                <option value="Compliance Officer">Compliance Officer</option>
+                <option value="Corporate Lawyer">Corporate Lawyer</option>
+              </optgroup>
+            </select>
           </div>
         </div>
+
+        <script>
+          const DEPT_ROLE_MAP = {
+            "Engineering": [
+              "Software Engineer",
+              "Senior Software Engineer",
+              "Lead Engineer",
+              "Principal Architect",
+              "Engineering Manager",
+              "QA Automation Engineer",
+              "DevOps Engineer"
+            ],
+            "Human Resources": [
+              "HR Generalist",
+              "HR Manager",
+              "Talent Acquisition Specialist",
+              "Recruiter",
+              "HR Director"
+            ],
+            "Finance": [
+              "Financial Analyst",
+              "Accountant",
+              "Payroll Specialist",
+              "Finance Manager",
+              "Chief Financial Officer (CFO)"
+            ],
+            "Marketing": [
+              "Marketing Lead",
+              "Digital Marketing Specialist",
+              "Content Strategist",
+              "SEO Specialist",
+              "Marketing Director"
+            ],
+            "Operations": [
+              "Operations Manager",
+              "Business Analyst",
+              "Project Manager",
+              "Scrum Master",
+              "Logistics Coordinator"
+            ],
+            "Sales": [
+              "Sales Executive",
+              "Account Executive",
+              "Sales Manager",
+              "Business Development Representative",
+              "Sales Director"
+            ],
+            "Legal & Compliance": [
+              "Legal Counsel",
+              "Compliance Officer",
+              "Corporate Lawyer"
+            ]
+          };
+
+          function handleDepartmentChange(selectedDesignation = '') {
+            const deptEl = document.getElementById('formEmpDept');
+            const desigEl = document.getElementById('formEmpDesignation');
+            if (!deptEl || !desigEl) return;
+
+            const dept = deptEl.value;
+            desigEl.innerHTML = '';
+
+            if (!dept) {
+              desigEl.innerHTML = '<option value="">-- Select Designation --</option>';
+              for (const [d, roles] of Object.entries(DEPT_ROLE_MAP)) {
+                const group = document.createElement('optgroup');
+                group.label = d;
+                roles.forEach(r => {
+                  const opt = document.createElement('option');
+                  opt.value = r;
+                  opt.textContent = r;
+                  group.appendChild(opt);
+                });
+                desigEl.appendChild(group);
+              }
+              return;
+            }
+
+            const roles = DEPT_ROLE_MAP[dept] || [];
+            desigEl.innerHTML = '<option value="">-- Select Designation --</option>';
+
+            let matched = false;
+            roles.forEach(r => {
+              const opt = document.createElement('option');
+              opt.value = r;
+              opt.textContent = r;
+              if (selectedDesignation && selectedDesignation === r) {
+                opt.selected = true;
+                matched = true;
+              }
+              desigEl.appendChild(opt);
+            });
+
+            if (selectedDesignation && !matched) {
+              const opt = document.createElement('option');
+              opt.value = selectedDesignation;
+              opt.textContent = selectedDesignation;
+              opt.selected = true;
+              desigEl.appendChild(opt);
+            }
+          }
+
+          // Attach listeners immediately and on DOM load
+          document.addEventListener('DOMContentLoaded', () => {
+            const deptEl = document.getElementById('formEmpDept');
+            if (deptEl) {
+              deptEl.addEventListener('change', () => handleDepartmentChange());
+              deptEl.addEventListener('input', () => handleDepartmentChange());
+            }
+          });
+        </script>
         <div class="form-group">
           <label>Corporate Email *</label>
           <input type="email" id="formEmpEmail" class="form-control" required placeholder="user@company.com">
@@ -571,6 +796,6 @@
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="js/app.js"></script>
+<script src="js/app.js?v=3.2"></script>
 </body>
 </html>

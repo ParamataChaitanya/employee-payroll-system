@@ -42,4 +42,10 @@ public class PayrollController {
         PayrollResponseDto response = payrollService.getSalaryByPeriod(id, period);
         return ResponseEntity.ok(ApiResponse.success("Salary record retrieved successfully", response));
     }
+
+    @GetMapping("/period/{period}")
+    public ResponseEntity<ApiResponse<List<PayrollResponseDto>>> getSalariesByPeriod(@PathVariable("period") String period) {
+        List<PayrollResponseDto> salaries = payrollService.getSalariesByPeriod(period);
+        return ResponseEntity.ok(ApiResponse.success("Salaries retrieved successfully for period " + period, salaries));
+    }
 }

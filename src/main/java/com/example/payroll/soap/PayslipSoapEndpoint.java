@@ -33,7 +33,8 @@ public class PayslipSoapEndpoint {
         Employee employee = employeeRepository.findById(empId)
                 .orElseThrow(() -> new RuntimeException("SOAP Fault: Employee not found with ID: " + empId));
 
-        Optional<Salary> salaryOpt = salaryRepository.findByEmployeeEmployeeIdAndPayPeriod(empId, request.getPayPeriod());
+        Salary salary = salaryRepository.findByEmployeeEmployeeIdAndPayPeriod(empId, request.getPayPeriod())
+                .orElseThrow(() -> new RuntimeException("SOAP Fault: Payroll has not been processed for employee ID " + empId + " for period " + request.getPayPeriod() + ". Please calculate and process payroll first."));
 
         GetPayslipResponse response = new GetPayslipResponse();
         response.setEmployeeId(employee.getEmployeeId());
@@ -42,28 +43,15 @@ public class PayslipSoapEndpoint {
         response.setEmail(employee.getEmail());
         response.setPayPeriod(request.getPayPeriod());
 
-        if (salaryOpt.isPresent()) {
-            Salary salary = salaryOpt.get();
-            response.setBasicSalary(salary.getBasicSalary());
-            response.setHra(salary.getHra());
-            response.setAllowances(salary.getAllowances());
-            response.setDeductions(salary.getDeductions());
-            response.setGrossSalary(salary.getGrossSalary());
-            response.setNetPay(salary.getNetPay());
-            response.setStatus(salary.getPaymentStatus());
-            response.setGeneratedDate(salary.getProcessedDate() != null ?
-                    salary.getProcessedDate().format(DATE_FORMATTER) : "2026-09-09 11:35:00");
-        } else {
-            // Default placeholder or computed if not yet processed
-            response.setBasicSalary(0.0);
-            response.setHra(0.0);
-            response.setAllowances(0.0);
-            response.setDeductions(0.0);
-            response.setGrossSalary(0.0);
-            response.setNetPay(0.0);
-            response.setStatus("UNPROCESSED");
-            response.setGeneratedDate("2026-09-09 11:35:00");
-        }
+        response.setBasicSalary(salary.getBasicSalary());
+        response.setHra(salary.getHra());
+        response.setAllowances(salary.getAllowances());
+        response.setDeductions(salary.getDeductions());
+        response.setGrossSalary(salary.getGrossSalary());
+        response.setNetPay(salary.getNetPay());
+        response.setStatus(salary.getPaymentStatus());
+        response.setGeneratedDate(salary.getProcessedDate() != null ?
+                salary.getProcessedDate().format(DATE_FORMATTER) : "N/A");
 
         return response;
     }

@@ -93,4 +93,12 @@ public class PayrollServiceImpl implements PayrollService {
                 ));
         return PayrollResponseDto.fromEntity(salary);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PayrollResponseDto> getSalariesByPeriod(String payPeriod) {
+        return salaryRepository.findByPayPeriod(payPeriod).stream()
+                .map(PayrollResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

@@ -93,4 +93,19 @@ public class PayrollServiceTest {
         // Ensure rollback guarantee: no salary record is saved
         verify(salaryRepository, never()).save(any(Salary.class));
     }
+
+    @Test
+    @DisplayName("Should successfully retrieve all salaries for a specific pay period")
+    void testGetSalariesByPeriod() {
+        Salary s1 = new Salary(mockEmployee, 50000.0, 20000.0, 5000.0, 3000.0, 75000.0, 72000.0, "10-2026", "PROCESSED");
+        when(salaryRepository.findByPayPeriod("10-2026")).thenReturn(java.util.List.of(s1));
+
+        java.util.List<PayrollResponseDto> results = payrollService.getSalariesByPeriod("10-2026");
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        assertEquals(72000.0, results.get(0).getNetPay());
+        assertEquals("10-2026", results.get(0).getPayPeriod());
+        verify(salaryRepository, times(1)).findByPayPeriod("10-2026");
+    }
 }

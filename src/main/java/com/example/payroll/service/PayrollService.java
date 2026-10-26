@@ -9,4 +9,5 @@ public interface PayrollService {
     PayrollResponseDto calculateAndProcessSalary(Long employeeId, PayrollCalculationRequestDto request);
     List<PayrollResponseDto> getSalaryHistory(Long employeeId);
     PayrollResponseDto getSalaryByPeriod(Long employeeId, String payPeriod);
+    List<PayrollResponseDto> getSalariesByPeriod(String payPeriod);
 }
